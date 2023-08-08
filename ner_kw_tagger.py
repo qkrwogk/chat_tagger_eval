@@ -6,7 +6,7 @@ import copy
 
 from transformers import pipeline
 
-model_checkpoint = "./model" #"soddokayo/klue-roberta-large-klue-ner"
+model_checkpoint = "./model" # 체크포인트명 비공개
 ner = pipeline("ner", model=model_checkpoint, aggregation_strategy="simple")
 #ner.save_pretrained('./model')
 
