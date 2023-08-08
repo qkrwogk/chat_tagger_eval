@@ -2,6 +2,7 @@ import os
 import argparse
 import json
 import re
+import copy
 
 from transformers import pipeline
 
@@ -54,9 +55,11 @@ def kw_tagger(sent:str) -> str:
     for dict_ in kw_list:
         mat_obj = re.finditer(pattern=dict_["word"], string=sent)
         for match in mat_obj:
+            # print(match.start(), match.end(), match.span(), match.group(), match.groups())
             dict_["start"] = match.start()
             dict_["end"] = match.end()
-            kw_tags.append(dict_)
+            kw_tags.append(copy.deepcopy(dict_)) # deepcopy하여 같은 단어 여러번 매치될 때 덮어써지는 것 방지
+
     return kw_tags
 
 
@@ -70,6 +73,7 @@ if __name__ == '__main__':
 
     with open(args.filename, "r", encoding='utf-8') as fin:
         json_obj = json.load(fin)
+        messages=[]
         for idx, msg_obj in enumerate(json_obj["messages"]):
 
             ner_tags = ner_tagger(msg_obj["message"])
@@ -78,7 +82,10 @@ if __name__ == '__main__':
             kw_tags = kw_tagger(msg_obj["message"])
             msg_obj["kw_tags"] = kw_tags  # Keyword Tag List 삽입
 
+            messages.append(copy.deepcopy(msg_obj)) # deepcopy하여 같은 모양의 obj가 여러번 나올 때 덮어써지는 것 방지
+
     res = json_obj
+    res["messages"] = messages # deepcopy한 애를 넣어서 중간에 이상하게 수정되는거 방지
     print(res)
 
     # save results to json file
